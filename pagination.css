@@ -147,6 +147,7 @@ a {
 }
 .pagination .icon-more:hover {
   cursor: default;
+  color: #444444;
 }
 .pagination .arrow {
   width: 36px;

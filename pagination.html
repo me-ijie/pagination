@@ -4,10 +4,6 @@
 <head>
   <meta charset="UTF-8" name="referrer" content="never">
   <!-- import CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
-  <script src="https://unpkg.com/vue/dist/vue.js"></script>
-  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
-
   <link rel="stylesheet" href="./pagination.css">
   <link rel="stylesheet" href="https://at.alicdn.com/t/font_2569427_9p4yo0e34hd.css">
   <link rel="icon" href="https://cjyjx.oss-cn-guangzhou.aliyuncs.com/images/website/gzh-logo.png" />
@@ -16,11 +12,9 @@
 
 <body>
   <div>
-
-    <mj-pagination xmlns="mine" class="mj-pagination" 
-    layout="total, sizes, prev, pager, next, jumper"
-    page-sizes="100,200,300,400"
-    >
+    <mj-pagination xmlns="mine" class="mj-pagination"
+      layout="total, sizes, prev, pager, next, jumper"
+      page-sizes="20,50,100">
     </mj-pagination>
 
   </div>
@@ -30,12 +24,12 @@
 <script>
   window.onload = function () {
     let request = new XMLHttpRequest()
-    let url = "https://api.tanglifeng.cn/position/list"
+    let url = "https://api.tanglifeng.cn/position/list?page=1&limit=20"
     request.onreadystatechange = function () {
       if (request.readyState == 4 && request.status == 200) {
         let res = request.responseText
         res = JSON.parse(res)
-        window.pagination(res.paging.size, res.paging.total)
+        pagination(res.paging.size, res.paging.total)
       }
     }
     request.open("GET", url, true)

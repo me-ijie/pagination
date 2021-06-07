@@ -1,4 +1,6 @@
 var currPage = 1
+var currSize = 20
+var currPages = 1
 
 function handleResult(res) {
   let container = document.getElementsByClassName('article-container')[0]
@@ -110,67 +112,80 @@ function toArticle(url) {
 
 function pagination(size, total) {
   let pages = Math.ceil(total / size)
+  var total = total
+  currPages = pages
   let mjPagination = document.getElementsByClassName('mj-pagination')[0]
-
-
-  const layout = mjPagination.attributes['layout'].nodeValue.replace(/\s/g,"").split(",")
+  const layout = mjPagination.attributes['layout'].nodeValue.replace(/\s/g, "").split(",")
 
   // 是否显示总条数
-  if(layout.indexOf('total') != -1) showTotal(total, mjPagination)
+  if (layout.indexOf('total') != -1) showTotal(total, mjPagination)
   // 是否可调整每页条数
-  if(layout.indexOf('sizes') != -1) showSizeSelector(mjPagination)
+  if (layout.indexOf('sizes') != -1) showSizeSelector(total, mjPagination)
   // pager
+  // if(layout.indexOf('pager-count') != -1) {
+  //   customerPager(pages, mjPagination)
+  // } else {
+  //   pager(pages, mjPagination)
+  // }
   pager(pages, mjPagination)
 
   // 是否显示jumper
-  if(layout.indexOf('jumper') != -1) showJumper(mjPagination)
+  if (layout.indexOf('jumper') != -1) showJumper(mjPagination)
 }
 
 function showTotal(total, mjPagination) {
   let node = document.createElement('p')
   node.setAttribute('id', 'totalCount')
-  node.innerText = "共 " + total +" 条"
+  node.innerText = "共 " + total + " 条"
   mjPagination.appendChild(node)
 }
 
-function showSizeSelector(mjPagination) {
-  const sizes = mjPagination.attributes['page-sizes'].nodeValue.replace(/\s/g,"").split(",")
+function showSizeSelector(total, mjPagination) {
+  const sizes = mjPagination.attributes['page-sizes'].nodeValue.replace(/\s/g, "").split(",")
   let selector = document.createElement('select')
   let i = 0
-  while(i < sizes.length) {
+  while (i < sizes.length) {
     let option = document.createElement('option')
     option.setAttribute('value', sizes[i])
     option.innerText = sizes[i] + '条/页'
     selector.appendChild(option)
     i++
   }
-  selector.onchange = function() {
+  selector.onchange = function () {
     changeSize(selector)
   }
 
-  const changeSize = function(selector) {
+  const changeSize = function (selector) {
     let index = selector.selectedIndex
-    let size = selector.options[index].value
-    sendRequest(size, mjPagination)
+    let size = parseInt(selector.options[index].value)
+    sendRequest(1, size, false)
+    console.log(currPages, currPage, currSize, 222)
+    if (currPages > 5) {
+      changeFoldPage(undefined, currPages, 1)
+    } else {
+      changeBasicPage(undefined, currPages, 1)
+    }
   }
 
   mjPagination.appendChild(selector)
 
 }
 
-function pager(pages, mjPagination) {
-  let pagination = document.getElementsByClassName('pagination')[0]
-  if(pagination) {
-    pagination.innerHTML = ""
-  } else {
-    
+function customPager(pages, mjPagination) {
+  let count = mjPagination.attributes['page-sizes'].nodeValue.replace(/\s/g, "")
+  if (count <= 5) {
+    pager(pages, mjPagination)
+    return
   }
 
+}
+
+function pager(pages, mjPagination) {
   let pagination = document.createElement('div')
   pagination.setAttribute('class', 'pagination')
 
-  if(pages <= 5) createBasicPager(pages, pagination)
-  if(pages > 5) createFoldPager(pages, pagination)
+  if (pages <= 5) createBasicPager(pages, pagination)
+  if (pages > 5) createFoldPager(pages, pagination)
 
   mjPagination.appendChild(pagination)
 }
@@ -178,10 +193,10 @@ function pager(pages, mjPagination) {
 function createBasicPager(pages, pagination) {
   let i = 0
 
-  while (i <= pages+1) {
+  while (i <= pages + 1) {
     let index = i
     let node = document.createElement('p')
-    if(i === 0 || i == pages+1) {
+    if (i === 0 || i == pages + 1) {
       let className = i === 0 ? "icon-arrow-left" : "icon-arrow-right"
       node.classList.add("iconfont", className, "arrow")
     } else {
@@ -192,39 +207,48 @@ function createBasicPager(pages, pagination) {
       pagination.children[0].classList.add("disabled")
     }
     node.addEventListener("click", function () {
-      changePage(index, pages, pagination)
+      changeBasicPage(index, pages)
+
+      if (index === 0 || index == pages + 1) {
+        page = index === 0 ? currPage - 1 : currPage + 1
+      } else {
+        page = index
+      }
+
+      sendRequest(page, currSize)
     })
     pagination.appendChild(node)
     i++
   }
 
-  const changePage = function(index, pages, pagination) {
-    let page
 
-    if(index == currPage) return
-    if(index === 0 && currPage == 1) return 
-    if(index == pages+1 && currPage == pages) return
+}
 
-    if(index === 0 || index == pages+1) {
-      page = index === 0 ? currPage-1 : currPage+1
-    } else {
-      page = index
-    }
+function changeBasicPage(index, pages, page) {
+  let topage = page
+  let pagination = document.getElementsByClassName('pagination')[0]
+  if (index == currPage) return
+  if (index === 0 && currPage == 1) return
+  if (index == pages + 1 && currPage == pages) return
 
-    let currNode = pagination.children[currPage]
-    currNode.classList.remove("active");
-    let pageNode = pagination.children[page]
-    pageNode.classList.add("active");
+  if (index === 0 || index == pages + 1) {
+    topage = index === 0 ? currPage - 1 : currPage + 1
+  } else if (index) {
+    topage = index
+  }
 
-    if(page == 1 || page == pages) {
-      pagination.children[page == 1 ? pages+1:0].classList.remove("disabled")
-      pagination.children[page == 1 ? 0:pages+1].classList.add("disabled")
-    } else {
-      pagination.children[0].classList.remove("disabled")
-      pagination.children[pages].classList.remove("disabled")
-    }
+  let currNode = pagination.children[currPage]
+  currNode.classList.remove("active");
 
-    sendRequest(page)
+  let pageNode = pagination.children[topage]
+  pageNode.classList.add("active");
+
+  if (topage == 1 || topage == pages) {
+    pagination.children[topage == 1 ? pages + 1 : 0].classList.remove("disabled")
+    pagination.children[topage == 1 ? 0 : pages + 1].classList.add("disabled")
+  } else {
+    pagination.children[0].classList.remove("disabled")
+    pagination.children[pages].classList.remove("disabled")
   }
 }
 
@@ -235,101 +259,107 @@ function createFoldPager(pages, pagination) {
     let node, index = i
     node = document.createElement('p')
 
-    if(i === 0 || i == 8) {
+    if (i === 0 || i == 8) {
       let className = i === 0 ? "icon-arrow-left" : "icon-arrow-right"
       node.classList.add("iconfont", className, "arrow")
-    } else if(i == 2 || i == 6) {
+    } else if (i == 2 || i == 6) {
       node.classList.add("iconfont", "icon-more")
       node.style.display = i == 2 ? 'none' : 'block'
-    } else if(i == 1) {
+    } else if (i == 1) {
       node.innerText = i
       node.classList.add("active")
       pagination.children[0].classList.add("disabled")
-    }
-     else {
-      node.innerText = i == 7 ? pages : i-1
+    } else {
+      node.innerText = i == 7 ? pages : i - 1
     }
 
-    if( i != 2 && i != 6) {
+    if (i != 2 && i != 6) {
       node.addEventListener("click", function () {
-        changePage(index, pages, pagination)
+        console.log(index, pages)
+        changeFoldPage(index, pages)
+        if (index === 0 || index == pages + 1) {
+          page = index === 0 ? currPage - 1 : currPage + 1
+        } else {
+          page = index
+        }
+        console.log(index, pages, currSize, page)
+        sendRequest(page, currSize)
       })
     }
 
     pagination.appendChild(node)
     i++
   }
-  /**
-   * 
-   * @param {string} index 按钮下标
-   * @param {string} pages 总页数
-   * @param {string} page 目标页码
-   * @returns 
-   */
-  const changePage = function(index, pages, pagination) {
-    let page
-    let node = pagination.children[index]
-    let currNode, pageNode
-    console.log(currPage, pages)
-    if(currPage == parseInt(node.innerText)) return
-    if(index === 0 && currPage == 1) return 
-    if(index == 8 && currPage == pages) return
-
-    //获取当前显示情况
-    if(node.innerText == "") { // 点击了prev/next按钮
-      page = index === 0 ? currPage-1 : currPage+1
-
-    } else { // 点击了数字按钮
-      page = parseInt(node.innerText) // 目标页码
-    }
-    console.log(currPage, page, pages)
-    // 去除当前页面的高亮显示
-    if(currPage == 1 ||  currPage == pages) {
-      currNode = pagination.children[currPage == 1 ? 1:7]
-    } else if(currPage == 2 || currPage == pages - 1){ // currPage == pages
-      currNode = pagination.children[currPage == 2 ? 3:5]
-    } else {
-      currNode = pagination.children[4]
-    }
-    currNode.classList.remove("active");
-
-    // 根据目标页面调整显示样式
-    if(page <= 3) {
-      pagination.children[2].style.display = 'none' // 隐藏左边省略号
-      pagination.children[3].innerText = 2 // 隐藏左边省略号 
-      pagination.children[4].innerText = 3 // 隐藏左边省略号
-      pagination.children[5].innerText = 4 // 隐藏左边省略号
-      pagination.children[6].style.display = 'block' // 显示右边省略号
-      pageNode = pagination.children[page == 1 ? 1:page+1]
-    } else if(page >= pages - 2) {
-      pagination.children[2].style.display = 'block' // 显示左边省略号
-      pagination.children[3].innerText = pages - 3 // 隐藏左边省略号 
-      pagination.children[4].innerText = pages - 2 // 隐藏左边省略号
-      pagination.children[5].innerText = pages - 1 // 隐藏左边省略号
-      pagination.children[6].style.display = 'none' // 隐藏右边省略号
-      pageNode = pagination.children[page == pages ? 7:6 - pages + page]
-    } else {
-      pagination.children[2].style.display = 'block' // 显示左边省略号
-      pagination.children[3].innerText = page - 1 // 隐藏左边省略号 
-      pagination.children[4].innerText = page // 隐藏左边省略号
-      pagination.children[5].innerText = page + 1 // 隐藏左边省略号
-      pagination.children[6].style.display = 'block' // 显示右边省略号
-      pageNode = pagination.children[4]
-    }
-    pageNode.classList.add("active");
-
-    if(page == 1 || page == pages) {
-      pagination.children[page == 1 ? 8:0].classList.remove("disabled")
-      pagination.children[page == 1 ? 0:8].classList.add("disabled")
-    } else {
-      pagination.children[0].classList.remove("disabled")
-      pagination.children[8].classList.remove("disabled")
-    }
-
-    sendRequest(page)
-  }
 }
 
+/**
+ * 
+ * @param {string} index 按钮下标
+ * @param {string} pages 总页数
+ * @param {string} page 目标页码
+ * @returns 
+ */
+function changeFoldPage(index, pages, page) {
+  let topage = page
+  let pagination = document.getElementsByClassName('pagination')[0]
+  let node = pagination.children[index]
+  let currNode, pageNode
+  if (index === 0 && currPage == 1) return
+  if (index == 8 && currPage == pages) return
+
+  //获取当前显示情况
+  if (node && node.innerText == "" && index) { // 点击了prev/next按钮
+    topage = index === 0 ? currPage - 1 : currPage + 1
+
+  } else if (index) { // 点击了数字按钮
+    topage = parseInt(node.innerText) // 目标页码
+  }
+  // 去除当前页面的高亮显示
+  if (currPage == 1 || currPage == pages) {
+    currNode = pagination.children[currPage == 1 ? 1 : 7]
+  } else if (currPage == 2 || currPage == pages - 1) { // currPage == pages
+    currNode = pagination.children[currPage == 2 ? 3 : 5]
+  } else {
+    currNode = pagination.children[4]
+  }
+  currNode.classList.remove("active");
+
+  // 根据目标页面调整显示样式
+  if (topage <= 3) {
+    pagination.children[2].style.display = 'none' // 隐藏左边省略号
+    pagination.children[3].innerText = 2
+    pagination.children[4].innerText = 3
+    pagination.children[5].innerText = 4
+    pagination.children[6].style.display = 'block' // 显示右边省略号
+    pagination.children[7].innerText = pages
+    pageNode = pagination.children[topage == 1 ? 1 : topage + 1]
+  } else if (topage >= pages - 2) {
+    pagination.children[2].style.display = 'block' // 显示左边省略号
+    pagination.children[3].innerText = pages - 3
+    pagination.children[4].innerText = pages - 2
+    pagination.children[5].innerText = pages - 1
+    pagination.children[6].style.display = 'none' // 隐藏右边省略号
+    pagination.children[7].innerText = pages
+    pageNode = pagination.children[topage == pages ? 7 : 6 - pages + topage]
+  } else {
+    pagination.children[2].style.display = 'block' // 显示左边省略号
+    pagination.children[3].innerText = topage - 1
+    pagination.children[4].innerText = topage
+    pagination.children[5].innerText = topage + 1
+    pagination.children[6].style.display = 'block' // 显示右边省略号
+    pagination.children[7].innerText = pages
+    pageNode = pagination.children[4]
+  }
+  pageNode.classList.add("active");
+
+  if (topage == 1 || topage == pages) {
+    pagination.children[topage == 1 ? 8 : 0].classList.remove("disabled")
+    pagination.children[topage == 1 ? 0 : 8].classList.add("disabled")
+  } else {
+    pagination.children[0].classList.remove("disabled")
+    pagination.children[8].classList.remove("disabled")
+  }
+}
 
 function showJumper(mjPagination) {
   let node = document.createElement('div')
@@ -337,8 +367,8 @@ function showJumper(mjPagination) {
   let input = document.createElement('input')
   input.setAttribute('value', 4)
   input.setAttribute('type', 'number')
-  input.onkeydown = function() {
-    gotoPage(input, e)
+  input.onkeydown = function (e) {
+    jumpToPage(input, e.key)
   }
   let txt2 = document.createTextNode('页')
   node.appendChild(txt1)
@@ -346,37 +376,39 @@ function showJumper(mjPagination) {
   node.appendChild(txt2)
   mjPagination.appendChild(node)
 
-  const gotoPage = function(input, e) {
-    let evt = window.event || e;
+  const jumpToPage = function (input, key) {
     let page = input.value
-    if (evt.keyCode == 13) {
-      sendRequest(page)
-    //跳转至 
+    if (page > currPages || page == currPage) return
+    if (key == "Enter") {
+      if (currPages > 5) {
+        changeFoldPage(undefined, currPages, page)
+      } else {
+        changeBasicPage(undefined, currPages, page)
+      }
+      sendRequest(page, currSize)
     }
   }
 }
 
-function sendRequest(page, size) {
+function sendRequest(page, size, ifWait) {
   let request = new XMLHttpRequest()
   let param, paramPage, paramSize
+  let wait = ifWait === false ? false : true
+  paramPage = page != undefined ? page : currPage
+  paramSize = size != undefined ? size : currSize
+  param = "page=" + paramPage + "&limit=" + paramSize
 
-  if(page) paramPage = "page=" + page
-  if(size) paramSize = "limit" + size
-  if(page && size) {
-    param = paramPage + "&" + paramSize
-  } else {
-    param = size ? paramSize : paramPage
-  }
   let url = "https://api.tanglifeng.cn/position/list?" + param
-  request.onreadystatechange = function (size) {
-    let mjPagination = document.getElementsByClassName('mj-pagination')[0]
+  request.onreadystatechange = function () {
     if (request.readyState == 4 && request.status == 200) {
       let res = request.responseText
       res = JSON.parse(res)
-      if(size) pager(Math.ceil(res.paging.total/res.paging.size), mjPagination)
-      currPage = page
+      currPages = Math.ceil(res.paging.total / res.paging.size)
+      currPage = paramPage
+      currSize = paramSize
+      console.log(111)
     }
   }
-  request.open("GET", url, true)
+  request.open("GET", url, wait)
   request.send()
 }
