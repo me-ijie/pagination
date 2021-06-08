@@ -308,22 +308,22 @@ function changeFoldPage(index, pages, page) {
   if (index == 8 && currPage == pages) return
 
 
-    //获取目标页码
-    if (node && node.innerText == "") { // 点击了prev/next按钮
-      topage = index === 0 ? currPage - 1 : currPage + 1
-    } else { // 点击了数字按钮
-      topage = parseInt(node.innerText) // 目标页码
-    }
-    // // 去除当前页面的高亮显示
-    // if (currPage == 1 || currPage == pages) { 
-    //   currNode = pagination.children[currPage == 1 ? 1 : 7]
-    // } else if (currPage == 2 || currPage == pages - 1) { 
-    //   currNode = pagination.children[currPage == 2 ? 3 : 5]
-    // } else {
-    //   currNode = pagination.children[4]
-    // }
-    currNode = document.getElementsByClassName('active')[0]
-    currNode.classList.remove("active");
+  //获取目标页码
+  if (node && node.innerText == "") { // 点击了prev/next按钮
+    topage = index === 0 ? currPage - 1 : currPage + 1
+  } else { // 点击了数字按钮
+    topage = parseInt(node.innerText) // 目标页码
+  }
+  // // 去除当前页面的高亮显示
+  // if (currPage == 1 || currPage == pages) { 
+  //   currNode = pagination.children[currPage == 1 ? 1 : 7]
+  // } else if (currPage == 2 || currPage == pages - 1) { 
+  //   currNode = pagination.children[currPage == 2 ? 3 : 5]
+  // } else {
+  //   currNode = pagination.children[4]
+  // }
+  currNode = document.getElementsByClassName('active')[0]
+  currNode.classList.remove("active");
 
 
   // 根据目标页面调整显示样式
@@ -408,7 +408,8 @@ function changeFoldPage(index, pages, page) {
   }
 }
 
-function showJumper(mjPagination) {
+function showJumper() {
+  let mjPagination = document.getElementsByClassName('mj-pagination')[0]
   let node = document.createElement('div')
   let txt1 = document.createTextNode('前往')
   let input = document.createElement('input')
