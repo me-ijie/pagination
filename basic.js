@@ -112,35 +112,53 @@ function toArticle(url) {
 
 function pagination(size, total) {
   let pages = Math.ceil(total / size)
+<<<<<<< HEAD
   var total = total
+=======
+>>>>>>> 93a1fb2eecbe16346debe9d86f66635a2ee0446d
   currPages = pages
   let mjPagination = document.getElementsByClassName('mj-pagination')[0]
   const layout = mjPagination.attributes['layout'].nodeValue.replace(/\s/g, "").split(",")
 
   // 是否显示总条数
+<<<<<<< HEAD
   if (layout.indexOf('total') != -1) showTotal(total, mjPagination)
   // 是否可调整每页条数
   if (layout.indexOf('sizes') != -1) showSizeSelector(total, mjPagination)
+=======
+  if (layout.indexOf('total') != -1) showTotal(total)
+  // 是否可调整每页条数
+  if (layout.indexOf('sizes') != -1) showSizeSelector()
+>>>>>>> 93a1fb2eecbe16346debe9d86f66635a2ee0446d
   // pager
   // if(layout.indexOf('pager-count') != -1) {
   //   customerPager(pages, mjPagination)
   // } else {
   //   pager(pages, mjPagination)
   // }
+<<<<<<< HEAD
   pager(pages, mjPagination)
 
   // 是否显示jumper
   if (layout.indexOf('jumper') != -1) showJumper(mjPagination)
+=======
+  pager(pages)
+
+  // 是否显示jumper
+  if (layout.indexOf('jumper') != -1) showJumper()
+>>>>>>> 93a1fb2eecbe16346debe9d86f66635a2ee0446d
 }
 
-function showTotal(total, mjPagination) {
+function showTotal(total) {
+  let mjPagination = document.getElementsByClassName('mj-pagination')[0]
   let node = document.createElement('p')
   node.setAttribute('id', 'totalCount')
   node.innerText = "共 " + total + " 条"
   mjPagination.appendChild(node)
 }
 
-function showSizeSelector(total, mjPagination) {
+function showSizeSelector() {
+  let mjPagination = document.getElementsByClassName('mj-pagination')[0]
   const sizes = mjPagination.attributes['page-sizes'].nodeValue.replace(/\s/g, "").split(",")
   let selector = document.createElement('select')
   let i = 0
@@ -159,7 +177,6 @@ function showSizeSelector(total, mjPagination) {
     let index = selector.selectedIndex
     let size = parseInt(selector.options[index].value)
     sendRequest(1, size, false)
-    console.log(currPages, currPage, currSize, 222)
     if (currPages > 5) {
       changeFoldPage(undefined, currPages, 1)
     } else {
@@ -168,10 +185,10 @@ function showSizeSelector(total, mjPagination) {
   }
 
   mjPagination.appendChild(selector)
-
 }
 
-function customPager(pages, mjPagination) {
+function customPager(pages) {
+  let mjPagination = document.getElementsByClassName('mj-pagination')[0]
   let count = mjPagination.attributes['page-sizes'].nodeValue.replace(/\s/g, "")
   if (count <= 5) {
     pager(pages, mjPagination)
@@ -180,7 +197,8 @@ function customPager(pages, mjPagination) {
 
 }
 
-function pager(pages, mjPagination) {
+function pager(pages) {
+  let mjPagination = document.getElementsByClassName('mj-pagination')[0]
   let pagination = document.createElement('div')
   pagination.setAttribute('class', 'pagination')
 
@@ -275,14 +293,13 @@ function createFoldPager(pages, pagination) {
 
     if (i != 2 && i != 6) {
       node.addEventListener("click", function () {
-        console.log(index, pages)
         changeFoldPage(index, pages)
-        if (index === 0 || index == pages + 1) {
+        if (index === 0 || index == 8) {
+          console.log('jinlail')
           page = index === 0 ? currPage - 1 : currPage + 1
         } else {
-          page = index
+          page = parseInt(node.innerText)
         }
-        console.log(index, pages, currSize, page)
         sendRequest(page, currSize)
       })
     }
@@ -307,12 +324,59 @@ function changeFoldPage(index, pages, page) {
   if (index === 0 && currPage == 1) return
   if (index == 8 && currPage == pages) return
 
-  //获取当前显示情况
-  if (node && node.innerText == "" && index) { // 点击了prev/next按钮
-    topage = index === 0 ? currPage - 1 : currPage + 1
 
-  } else if (index) { // 点击了数字按钮
-    topage = parseInt(node.innerText) // 目标页码
+    //获取目标页码
+    if (node && node.innerText == "") { // 点击了prev/next按钮
+      topage = index === 0 ? currPage - 1 : currPage + 1
+    } else { // 点击了数字按钮
+      topage = parseInt(node.innerText) // 目标页码
+    }
+    // // 去除当前页面的高亮显示
+    // if (currPage == 1 || currPage == pages) { 
+    //   currNode = pagination.children[currPage == 1 ? 1 : 7]
+    // } else if (currPage == 2 || currPage == pages - 1) { 
+    //   currNode = pagination.children[currPage == 2 ? 3 : 5]
+    // } else {
+    //   currNode = pagination.children[4]
+    // }
+    currNode = document.getElementsByClassName('active')[0]
+    currNode.classList.remove("active");
+
+
+  // 根据目标页面调整显示样式
+  if (topage <= 3) {
+    pagination.children[2].style.display = 'none' // 隐藏左边省略号
+    pagination.children[3].innerText = 2
+    pagination.children[4].innerText = 3
+    pagination.children[5].innerText = 4
+    pagination.children[6].style.display = 'block' // 显示右边省略号
+    pagination.children[7].innerText = pages
+    pageNode = pagination.children[topage == 1 ? 1 : topage + 1]
+  } else if (topage >= pages - 2) {
+    pagination.children[2].style.display = 'block' // 显示左边省略号
+    pagination.children[3].innerText = pages - 3
+    pagination.children[4].innerText = pages - 2
+    pagination.children[5].innerText = pages - 1
+    pagination.children[6].style.display = 'none' // 隐藏右边省略号
+    pagination.children[7].innerText = pages
+    pageNode = pagination.children[topage == pages ? 7 : 6 - pages + topage]
+  } else {
+    pagination.children[2].style.display = 'block' // 显示左边省略号
+    pagination.children[3].innerText = topage - 1
+    pagination.children[4].innerText = topage
+    pagination.children[5].innerText = topage + 1
+    pagination.children[6].style.display = 'block' // 显示右边省略号
+    pagination.children[7].innerText = pages
+    pageNode = pagination.children[4]
+  }
+  pageNode.classList.add("active");
+
+  if (topage == 1 || topage == pages) {
+    pagination.children[topage == 1 ? 8 : 0].classList.remove("disabled")
+    pagination.children[topage == 1 ? 0 : 8].classList.add("disabled")
+  } else {
+    pagination.children[0].classList.remove("disabled")
+    pagination.children[8].classList.remove("disabled")
   }
   // 去除当前页面的高亮显示
   if (currPage == 1 || currPage == pages) {
@@ -406,7 +470,6 @@ function sendRequest(page, size, ifWait) {
       currPages = Math.ceil(res.paging.total / res.paging.size)
       currPage = paramPage
       currSize = paramSize
-      console.log(111)
     }
   }
   request.open("GET", url, wait)
