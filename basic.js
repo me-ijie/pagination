@@ -112,41 +112,24 @@ function toArticle(url) {
 
 function pagination(size, total) {
   let pages = Math.ceil(total / size)
-<<<<<<< HEAD
-  var total = total
-=======
->>>>>>> 93a1fb2eecbe16346debe9d86f66635a2ee0446d
   currPages = pages
   let mjPagination = document.getElementsByClassName('mj-pagination')[0]
   const layout = mjPagination.attributes['layout'].nodeValue.replace(/\s/g, "").split(",")
 
   // 是否显示总条数
-<<<<<<< HEAD
-  if (layout.indexOf('total') != -1) showTotal(total, mjPagination)
-  // 是否可调整每页条数
-  if (layout.indexOf('sizes') != -1) showSizeSelector(total, mjPagination)
-=======
   if (layout.indexOf('total') != -1) showTotal(total)
   // 是否可调整每页条数
   if (layout.indexOf('sizes') != -1) showSizeSelector()
->>>>>>> 93a1fb2eecbe16346debe9d86f66635a2ee0446d
   // pager
   // if(layout.indexOf('pager-count') != -1) {
   //   customerPager(pages, mjPagination)
   // } else {
   //   pager(pages, mjPagination)
   // }
-<<<<<<< HEAD
-  pager(pages, mjPagination)
-
-  // 是否显示jumper
-  if (layout.indexOf('jumper') != -1) showJumper(mjPagination)
-=======
   pager(pages)
 
   // 是否显示jumper
   if (layout.indexOf('jumper') != -1) showJumper()
->>>>>>> 93a1fb2eecbe16346debe9d86f66635a2ee0446d
 }
 
 function showTotal(total) {
