@@ -352,6 +352,51 @@ function changeFoldPage(index, page) {
     pagination.children[0].classList.remove("disabled")
     pagination.children[8].classList.remove("disabled")
   }
+  // 去除当前页面的高亮显示
+  if (currPage == 1 || currPage == pages) {
+    currNode = pagination.children[currPage == 1 ? 1 : 7]
+  } else if (currPage == 2 || currPage == pages - 1) { // currPage == pages
+    currNode = pagination.children[currPage == 2 ? 3 : 5]
+  } else {
+    currNode = pagination.children[4]
+  }
+  currNode.classList.remove("active");
+
+  // 根据目标页面调整显示样式
+  if (topage <= 3) {
+    pagination.children[2].style.display = 'none' // 隐藏左边省略号
+    pagination.children[3].innerText = 2
+    pagination.children[4].innerText = 3
+    pagination.children[5].innerText = 4
+    pagination.children[6].style.display = 'block' // 显示右边省略号
+    pagination.children[7].innerText = pages
+    pageNode = pagination.children[topage == 1 ? 1 : topage + 1]
+  } else if (topage >= pages - 2) {
+    pagination.children[2].style.display = 'block' // 显示左边省略号
+    pagination.children[3].innerText = pages - 3
+    pagination.children[4].innerText = pages - 2
+    pagination.children[5].innerText = pages - 1
+    pagination.children[6].style.display = 'none' // 隐藏右边省略号
+    pagination.children[7].innerText = pages
+    pageNode = pagination.children[topage == pages ? 7 : 6 - pages + topage]
+  } else {
+    pagination.children[2].style.display = 'block' // 显示左边省略号
+    pagination.children[3].innerText = topage - 1
+    pagination.children[4].innerText = topage
+    pagination.children[5].innerText = topage + 1
+    pagination.children[6].style.display = 'block' // 显示右边省略号
+    pagination.children[7].innerText = pages
+    pageNode = pagination.children[4]
+  }
+  pageNode.classList.add("active");
+
+  if (topage == 1 || topage == pages) {
+    pagination.children[topage == 1 ? 8 : 0].classList.remove("disabled")
+    pagination.children[topage == 1 ? 0 : 8].classList.add("disabled")
+  } else {
+    pagination.children[0].classList.remove("disabled")
+    pagination.children[8].classList.remove("disabled")
+  }
 }
 
 function showJumper() {
