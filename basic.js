@@ -126,7 +126,7 @@ function pagination(size, total) {
   // } else {
   //   pager(pages, mjPagination)
   // }
-  pager(pages)
+  pager(currPages)
 
   // 是否显示jumper
   if (layout.indexOf('jumper') != -1) showJumper()
@@ -161,12 +161,11 @@ function showSizeSelector() {
     let size = parseInt(selector.options[index].value)
     sendRequest(1, size, false)
     if (currPages > 5) {
-      changeFoldPage(undefined, currPages, 1)
+      changeFoldPage(undefined, 1)
     } else {
-      changeBasicPage(undefined, currPages, 1)
+      changeBasicPage(undefined,1)
     }
   }
-
   mjPagination.appendChild(selector)
 }
 
@@ -180,18 +179,18 @@ function customPager(pages) {
 
 }
 
-function pager(pages) {
+function pager(currPages) {
   let mjPagination = document.getElementsByClassName('mj-pagination')[0]
   let pagination = document.createElement('div')
   pagination.setAttribute('class', 'pagination')
 
-  if (pages <= 5) createBasicPager(pages, pagination)
-  if (pages > 5) createFoldPager(pages, pagination)
+  if (currPages <= 5) createBasicPager(currPages, pagination)
+  if (currPages > 5) createFoldPager(currPages, pagination)
 
   mjPagination.appendChild(pagination)
 }
 
-function createBasicPager(pages, pagination) {
+function createBasicPager(currPages, pagination) {
   let i = 0
 
   while (i <= pages + 1) {
@@ -253,7 +252,7 @@ function changeBasicPage(index, pages, page) {
   }
 }
 
-function createFoldPager(pages, pagination) {
+function createFoldPager(currPages, pagination) {
   let i = 0
 
   while (i <= 8) {
@@ -271,14 +270,13 @@ function createFoldPager(pages, pagination) {
       node.classList.add("active")
       pagination.children[0].classList.add("disabled")
     } else {
-      node.innerText = i == 7 ? pages : i - 1
+      node.innerText = i == 7 ? currPages : i - 1
     }
 
     if (i != 2 && i != 6) {
       node.addEventListener("click", function () {
-        changeFoldPage(index, pages)
+        changeFoldPage(index)
         if (index === 0 || index == 8) {
-          console.log('jinlail')
           page = index === 0 ? currPage - 1 : currPage + 1
         } else {
           page = parseInt(node.innerText)
@@ -293,35 +291,28 @@ function createFoldPager(pages, pagination) {
 }
 
 /**
- * 
+ *
  * @param {string} index 按钮下标
  * @param {string} pages 总页数
  * @param {string} page 目标页码
- * @returns 
+ * @returns
  */
-function changeFoldPage(index, pages, page) {
+function changeFoldPage(index, page) {
+  console.log(index,currPage, currPages)
   let topage = page
   let pagination = document.getElementsByClassName('pagination')[0]
   let node = pagination.children[index]
   let currNode, pageNode
   if (index === 0 && currPage == 1) return
-  if (index == 8 && currPage == pages) return
+  if (index == 8 && currPage == currPages) return
 
 
     //获取目标页码
     if (node && node.innerText == "") { // 点击了prev/next按钮
       topage = index === 0 ? currPage - 1 : currPage + 1
-    } else { // 点击了数字按钮
+    } else if(topage == undefined){ // 点击了数字按钮
       topage = parseInt(node.innerText) // 目标页码
     }
-    // // 去除当前页面的高亮显示
-    // if (currPage == 1 || currPage == pages) { 
-    //   currNode = pagination.children[currPage == 1 ? 1 : 7]
-    // } else if (currPage == 2 || currPage == pages - 1) { 
-    //   currNode = pagination.children[currPage == 2 ? 3 : 5]
-    // } else {
-    //   currNode = pagination.children[4]
-    // }
     currNode = document.getElementsByClassName('active')[0]
     currNode.classList.remove("active");
 
@@ -333,28 +324,28 @@ function changeFoldPage(index, pages, page) {
     pagination.children[4].innerText = 3
     pagination.children[5].innerText = 4
     pagination.children[6].style.display = 'block' // 显示右边省略号
-    pagination.children[7].innerText = pages
+    pagination.children[7].innerText = currPages
     pageNode = pagination.children[topage == 1 ? 1 : topage + 1]
-  } else if (topage >= pages - 2) {
+  } else if (topage >= currPages - 2) {
     pagination.children[2].style.display = 'block' // 显示左边省略号
-    pagination.children[3].innerText = pages - 3
-    pagination.children[4].innerText = pages - 2
-    pagination.children[5].innerText = pages - 1
+    pagination.children[3].innerText = currPages - 3
+    pagination.children[4].innerText = currPages - 2
+    pagination.children[5].innerText = currPages - 1
     pagination.children[6].style.display = 'none' // 隐藏右边省略号
-    pagination.children[7].innerText = pages
-    pageNode = pagination.children[topage == pages ? 7 : 6 - pages + topage]
+    pagination.children[7].innerText = currPages
+    pageNode = pagination.children[topage == currPages ? 7 : 6 - currPages + topage]
   } else {
     pagination.children[2].style.display = 'block' // 显示左边省略号
     pagination.children[3].innerText = topage - 1
     pagination.children[4].innerText = topage
     pagination.children[5].innerText = topage + 1
     pagination.children[6].style.display = 'block' // 显示右边省略号
-    pagination.children[7].innerText = pages
+    pagination.children[7].innerText = currPages
     pageNode = pagination.children[4]
   }
   pageNode.classList.add("active");
 
-  if (topage == 1 || topage == pages) {
+  if (topage == 1 || topage == currPages) {
     pagination.children[topage == 1 ? 8 : 0].classList.remove("disabled")
     pagination.children[topage == 1 ? 0 : 8].classList.add("disabled")
   } else {
@@ -380,13 +371,13 @@ function showJumper() {
   mjPagination.appendChild(node)
 
   const jumpToPage = function (input, key) {
-    let page = input.value
+    let page = parseInt(input.value)
     if (page > currPages || page == currPage) return
     if (key == "Enter") {
       if (currPages > 5) {
-        changeFoldPage(undefined, currPages, page)
+        changeFoldPage(undefined, page)
       } else {
-        changeBasicPage(undefined, currPages, page)
+        changeBasicPage(undefined, page)
       }
       sendRequest(page, currSize)
     }
