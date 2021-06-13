@@ -1,6 +1,7 @@
 var currPage = 1
 var currSize = 20
 var currPages = 1
+var currInput = 1
 
 function handleResult(res) {
   let container = document.getElementsByClassName('article-container')[0]
@@ -156,10 +157,10 @@ function showSizeSelector() {
     changeSize(selector)
   }
 
-  const changeSize = function (selector) {
+  const changeSize = async function (selector) {
     let index = selector.selectedIndex
     let size = parseInt(selector.options[index].value)
-    sendRequest(1, size, false)
+    await sendRequest(1, size, false)
     if (currPages > 5) {
       changeFoldPage(undefined, 1)
     } else {
@@ -193,10 +194,10 @@ function pager(currPages) {
 function createBasicPager(currPages, pagination) {
   let i = 0
 
-  while (i <= pages + 1) {
+  while (i <= currPages + 1) {
     let index = i
     let node = document.createElement('p')
-    if (i === 0 || i == pages + 1) {
+    if (i === 0 || i == currPages + 1) {
       let className = i === 0 ? "icon-arrow-left" : "icon-arrow-right"
       node.classList.add("iconfont", className, "arrow")
     } else {
@@ -207,9 +208,9 @@ function createBasicPager(currPages, pagination) {
       pagination.children[0].classList.add("disabled")
     }
     node.addEventListener("click", function () {
-      changeBasicPage(index, pages)
+      changeBasicPage(index, currPages)
 
-      if (index === 0 || index == pages + 1) {
+      if (index === 0 || index == currPages + 1) {
         page = index === 0 ? currPage - 1 : currPage + 1
       } else {
         page = index
@@ -224,14 +225,14 @@ function createBasicPager(currPages, pagination) {
 
 }
 
-function changeBasicPage(index, pages, page) {
+function changeBasicPage(index, currPages, page) {
   let topage = page
   let pagination = document.getElementsByClassName('pagination')[0]
   if (index == currPage) return
   if (index === 0 && currPage == 1) return
-  if (index == pages + 1 && currPage == pages) return
+  if (index == currPages + 1 && currPage == currPages) return
 
-  if (index === 0 || index == pages + 1) {
+  if (index === 0 || index == currPages + 1) {
     topage = index === 0 ? currPage - 1 : currPage + 1
   } else if (index) {
     topage = index
@@ -243,12 +244,12 @@ function changeBasicPage(index, pages, page) {
   let pageNode = pagination.children[topage]
   pageNode.classList.add("active");
 
-  if (topage == 1 || topage == pages) {
-    pagination.children[topage == 1 ? pages + 1 : 0].classList.remove("disabled")
-    pagination.children[topage == 1 ? 0 : pages + 1].classList.add("disabled")
+  if (topage == 1 || topage == currPages) {
+    pagination.children[topage == 1 ? currPages + 1 : 0].classList.remove("disabled")
+    pagination.children[topage == 1 ? 0 : currPages + 1].classList.add("disabled")
   } else {
     pagination.children[0].classList.remove("disabled")
-    pagination.children[pages].classList.remove("disabled")
+    pagination.children[currPages].classList.remove("disabled")
   }
 }
 
@@ -298,7 +299,6 @@ function createFoldPager(currPages, pagination) {
  * @returns
  */
 function changeFoldPage(index, page) {
-  console.log(index,currPage, currPages)
   let topage = page
   let pagination = document.getElementsByClassName('pagination')[0]
   let node = pagination.children[index]
@@ -316,6 +316,7 @@ function changeFoldPage(index, page) {
     currNode = document.getElementsByClassName('active')[0]
     currNode.classList.remove("active");
 
+    currPage = topage
 
   // 根据目标页面调整显示样式
   if (topage <= 3) {
@@ -353,9 +354,9 @@ function changeFoldPage(index, page) {
     pagination.children[8].classList.remove("disabled")
   }
   // 去除当前页面的高亮显示
-  if (currPage == 1 || currPage == pages) {
+  if (currPage == 1 || currPage == currPages) {
     currNode = pagination.children[currPage == 1 ? 1 : 7]
-  } else if (currPage == 2 || currPage == pages - 1) { // currPage == pages
+  } else if (currPage == 2 || currPage == currPages - 1) { // currPage == pages
     currNode = pagination.children[currPage == 2 ? 3 : 5]
   } else {
     currNode = pagination.children[4]
@@ -369,28 +370,28 @@ function changeFoldPage(index, page) {
     pagination.children[4].innerText = 3
     pagination.children[5].innerText = 4
     pagination.children[6].style.display = 'block' // 显示右边省略号
-    pagination.children[7].innerText = pages
+    pagination.children[7].innerText = currPages
     pageNode = pagination.children[topage == 1 ? 1 : topage + 1]
-  } else if (topage >= pages - 2) {
+  } else if (topage >= currPages - 2) {
     pagination.children[2].style.display = 'block' // 显示左边省略号
-    pagination.children[3].innerText = pages - 3
-    pagination.children[4].innerText = pages - 2
-    pagination.children[5].innerText = pages - 1
+    pagination.children[3].innerText = currPages - 3
+    pagination.children[4].innerText = currPages - 2
+    pagination.children[5].innerText = currPages - 1
     pagination.children[6].style.display = 'none' // 隐藏右边省略号
-    pagination.children[7].innerText = pages
-    pageNode = pagination.children[topage == pages ? 7 : 6 - pages + topage]
+    pagination.children[7].innerText = currPages
+    pageNode = pagination.children[topage == currPages ? 7 : 6 - currPages + topage]
   } else {
     pagination.children[2].style.display = 'block' // 显示左边省略号
     pagination.children[3].innerText = topage - 1
     pagination.children[4].innerText = topage
     pagination.children[5].innerText = topage + 1
     pagination.children[6].style.display = 'block' // 显示右边省略号
-    pagination.children[7].innerText = pages
+    pagination.children[7].innerText = currPages
     pageNode = pagination.children[4]
   }
   pageNode.classList.add("active");
 
-  if (topage == 1 || topage == pages) {
+  if (topage == 1 || topage == currPages) {
     pagination.children[topage == 1 ? 8 : 0].classList.remove("disabled")
     pagination.children[topage == 1 ? 0 : 8].classList.add("disabled")
   } else {
@@ -404,7 +405,7 @@ function showJumper() {
   let node = document.createElement('div')
   let txt1 = document.createTextNode('前往')
   let input = document.createElement('input')
-  input.setAttribute('value', 4)
+  input.setAttribute('value', currInput)
   input.setAttribute('type', 'number')
   input.onkeydown = function (e) {
     jumpToPage(input, e.key)
@@ -417,8 +418,13 @@ function showJumper() {
 
   const jumpToPage = function (input, key) {
     let page = parseInt(input.value)
-    if (page > currPages || page == currPage) return
+    if (page == currPage) return
+    if(page > currPages) {
+      input.value = currInput
+      return
+    }
     if (key == "Enter") {
+      currInput = input.value
       if (currPages > 5) {
         changeFoldPage(undefined, page)
       } else {
@@ -430,6 +436,7 @@ function showJumper() {
 }
 
 function sendRequest(page, size, ifWait) {
+  return new Promise(async (resolve, reject)=> {
   let request = new XMLHttpRequest()
   let param, paramPage, paramSize
   let wait = ifWait === false ? false : true
@@ -438,15 +445,18 @@ function sendRequest(page, size, ifWait) {
   param = "page=" + paramPage + "&limit=" + paramSize
 
   let url = "https://api.tanglifeng.cn/position/list?" + param
-  request.onreadystatechange = function () {
-    if (request.readyState == 4 && request.status == 200) {
-      let res = request.responseText
-      res = JSON.parse(res)
-      currPages = Math.ceil(res.paging.total / res.paging.size)
-      currPage = paramPage
-      currSize = paramSize
+    request.onreadystatechange = function () {
+      if (request.readyState == 4 && request.status == 200) {
+        let res = request.responseText
+        res = JSON.parse(res)
+        currPages = Math.ceil(res.paging.total / res.paging.size)
+        currSize = paramSize
+        resolve(currPages)
+      }
     }
-  }
-  request.open("GET", url, wait)
-  request.send()
+    request.open("GET", url, wait)
+    request.send()
+  }).catch(function(reason) {
+  })
+  
 }
